@@ -15,6 +15,9 @@ def preprocessImage(image):
     print(threshedMask.shape)
     threshedMask = cv2.merge((threshedMask, threshedMask, threshedMask))
     threshImage = cv2.bitwise_and(image, threshedMask)
+    threshImage = cv2.GaussianBlur(threshImage, (5,5), 0)
+    kern1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2))
+    #threshImage = cv2.morphologyEx(threshImage, cv2.MORPH_CLOSE, kern1)
     return threshImage
 
 
