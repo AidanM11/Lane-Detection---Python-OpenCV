@@ -13,7 +13,7 @@ def Roi(img, vertices):
 def corners(img):
     height, width, depth = img.shape
     print(img.shape)
-    coord_lst = [(width / 2 + int(width/10), height / 2), (width / 2 - int(width/10), height / 2)]
+    coord_lst = [(width / 2 - int(width/10), height / 2), (width / 2 + int(width/10), height / 2)]
 
     roi_h = int(height/10)
     roi_w = int(width/8)
