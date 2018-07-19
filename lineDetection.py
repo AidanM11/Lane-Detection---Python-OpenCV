@@ -15,8 +15,8 @@ def detectLines(image, origImg):
     #cv2.imshow("ROI", imageROI1)
     #cv2.imshow("ROI", imageROI2)
     #cv2.waitKey()
-    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 150, lines = 1, minLineLength=100, maxLineGap=600)
-    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 150, lines = 1, minLineLength=100, maxLineGap=600)
+    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 80, lines = 1, minLineLength=100, maxLineGap=600)
+    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 14, lines = 1, minLineLength=100, maxLineGap=600)
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     # if lines1 is not None:
     #     for lineSet in lines1:
@@ -40,6 +40,8 @@ def detectLines(image, origImg):
     points1y = []
     points2x = []
     points2y = []
+    polyPoints = []
+    bottomPointFound = False
     if lines1 is not None:
         for lineSet in lines1:
             for line in lineSet:
@@ -51,8 +53,18 @@ def detectLines(image, origImg):
                     points1y.append(line[3])
         if len(points1x) > 0:
             m, b = np.polyfit(points1x, points1y, 1)
+            allowedLength = (int)(width // 2 * 0.45)
             for x in range(width//2):
-                cv2.circle(origImg, (x, (int)(x*m + b)), 2, (0,0,255))
+                cv2.circle(origImg, (x, (int)(x*m + b)), 5, (0,0,255))
+                if (int)(x*m + b) < height:
+                    allowedLength = allowedLength - 1
+                    if bottomPointFound == False:
+                        polyPoints.append([x, (int)(x*m + b)])
+                        bottomPointFound = True
+                if allowedLength == 0:
+                    polyPoints.append([x, (int)(x*m + b)])
+                    break
+    bottomPointFound = False
     if lines2 is not None:
         for lineSet in lines2:
             for line in lineSet:
@@ -64,8 +76,28 @@ def detectLines(image, origImg):
                     points2y.append(line[3])
         if len(points2x) > 0:
             m, b = np.polyfit(points2x, points2y, 1)
+            allowedLength = (int)(width // 2 * 0.45)
             for x in range(width//2):
-                cv2.circle(origImg, (x + width//2, (int)(x*m + b)), 2, (0,0,255))
+                x = width - x - width//2
+                cv2.circle(origImg, (x + width//2, (int)(x*m + b)), 5, (0,0,255))
+                if (int)(x*m + b) < height:
+                    allowedLength = allowedLength - 1
+                    if bottomPointFound == False:
+                        polyPoints.append([x + width//2, (int)(x*m + b)])
+                        bottomPointFound = True
+                if allowedLength == 0:
+                    polyPoints.append([x + width//2, (int)(x * m + b)])
+                    break
+    if len(polyPoints) == 4:
+        temp = polyPoints[2]
+        polyPoints[2] = polyPoints[3]
+        polyPoints[3] = temp
+        print(polyPoints)
+        polyPoints =np.array(polyPoints)
+        print(polyPoints)
+        newImg = np.zeros_like(origImg)
+        cv2.fillPoly(newImg, [polyPoints], (0,255,0))
+        origImg = cv2.addWeighted(origImg, 1, newImg, 0.7, 0)
     return origImg
 
 def testLineDetect():
@@ -79,17 +111,21 @@ def testLineDetect():
 
 def testLineVideo():
     cap = cv2.VideoCapture("test_videos/solidWhiteRight.mp4")
-    while True:
+    while cap.isOpened():
         ret, frame = cap.read()
         origFrame = frame
+        frame = processing.preprocess2(frame)
         frame = preprocessImage(frame)
         frame, vertices = processing.corners(frame)
         frame = processing.Roi(frame, vertices)
         origFrame = detectLines(frame, origFrame)
         cv2.imshow("Video", origFrame)
+        cv2.imshow("Processed", frame)
         print("frame shown")
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.imwrite("test_images/newimage.jpg", origFrame)
             break
+    cap.release()
+    cv2.destroyAllWindows()
 
 testLineVideo()
