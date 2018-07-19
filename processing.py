@@ -17,7 +17,7 @@ def corners(img):
     roi_h = 100
     roi_w = 300
 
-    bot_right = img[height - roi_h:height, width - roi_w:width]
+    bot_right = img[height - roi_h:height-60, width - roi_w:width]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_right, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_right.shape
@@ -29,7 +29,7 @@ def corners(img):
         else:
             for circleSet in goodFeats:
                 cv2.circle(bot_right, (circleSet[0][0], circleSet[0][1]), 3, (0, 255, 0), -1)
-                coord_lst.append([width - circleSet[0][0],height])
+                coord_lst.append([width - circleSet[0][0]+30,height])
 
     else:
         cv2.circle(bot_right, (0, hgt), 3, (0, 255, 0), -1)
@@ -38,7 +38,7 @@ def corners(img):
 
 
 
-    bot_left = img[height - roi_h:, 0:roi_w]
+    bot_left = img[height - roi_h:height-30, 0:roi_w]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_left, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_left.shape
@@ -50,7 +50,7 @@ def corners(img):
         else:
             for circleSet in goodFeats1:
                 cv2.circle(bot_left, (circleSet[0][0], circleSet[0][1]), 3, (0, 255, 0), -1)
-                coord_lst.append([circleSet[0][0],height])
+                coord_lst.append([circleSet[0][0]-40,height])
 
     else:
         cv2.circle(bot_left, (0, hgt), 3, (0, 255, 0), -1)
