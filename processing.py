@@ -58,6 +58,36 @@ def corners(img):
 
     return img, coord_lst
 
+def preprocess2(image):
+
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    thresh = 80
+    thresh2 = 40
+
+    bgr = [[0,255,255],[255,255,255]]
+    hsv1 = cv2.cvtColor(np.uint8([[bgr[0]]]), cv2.COLOR_BGR2HSV)[0][0]
+    hsv2 = cv2.cvtColor(np.uint8([[bgr[1]]]), cv2.COLOR_BGR2HSV)[0][0]
+    print(hsv2)
+
+    maxHSV1 = np.array([hsv1[0] + thresh, hsv1[1] + 150, hsv1[2] + 150])
+    minHSV1 = np.array([hsv1[0] - thresh, hsv1[1] - 150, hsv1[2] - 150])
+
+    maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
+    resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
+
+    maxHSV2 = np.array([hsv2[0]+150, hsv2[1]+150, hsv2[2] + thresh2])
+    minHSV2 = np.array([hsv2[0]-150, hsv2[1]-150, hsv2[2] - thresh2])
+
+    maskHSV2 = cv2.inRange(image, minHSV2, maxHSV2)
+    resultHSV2 = cv2.bitwise_and(image, image, mask=maskHSV2)
+
+    final_img = cv2.bitwise_or(resultHSV1,resultHSV2)
+    final_img = cv2.cvtColor(final_img, cv2.COLOR_HSV2BGR)
+
+
+    return final_img
+
 
 #two_up = os.path.abspath(os.path.join(__file__, "../../test_images/solidWhiteCurve.jpg"))
 # img = cv2.imread("test_images/solidYellowCurve2.jpg")
