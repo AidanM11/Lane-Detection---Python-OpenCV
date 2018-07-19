@@ -14,7 +14,7 @@ def corners(img):
     height, width, depth = img.shape
     coord_lst = [(width / 2, height / 2)]
 
-    bot_right = img[height - 100:height, width - 100:width]
+    bot_right = img[height - 50:height, width - 200:width]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_right, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_right.shape
@@ -35,7 +35,7 @@ def corners(img):
 
 
 
-    bot_left = img[height - 100:, :100]
+    bot_left = img[height - 50:, :200]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_left, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_left.shape
