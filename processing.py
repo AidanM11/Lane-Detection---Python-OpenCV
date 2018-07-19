@@ -12,7 +12,7 @@ def Roi(img, vertices):
 
 def corners(img):
     height, width, depth = img.shape
-    coord_lst = [(width / 2, height / 2)]
+    coord_lst = [(int(width / 2), int(height / 3))]
 
     roi_h = 100
     roi_w = 300
@@ -63,7 +63,7 @@ def preprocess2(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     thresh = 80
-    thresh2 = 40
+    thresh2 = 55
 
     bgr = [[0,255,255],[255,255,255]]
     hsv1 = cv2.cvtColor(np.uint8([[bgr[0]]]), cv2.COLOR_BGR2HSV)[0][0]
@@ -76,7 +76,7 @@ def preprocess2(image):
     maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
     resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
 
-    maxHSV2 = np.array([hsv2[0]+150, hsv2[1]+150, hsv2[2] + thresh2])
+    maxHSV2 = np.array([hsv2[0]+150, hsv2[1]+150, hsv2[2]])
     minHSV2 = np.array([hsv2[0]-150, hsv2[1]-150, hsv2[2] - thresh2])
 
     maskHSV2 = cv2.inRange(image, minHSV2, maxHSV2)
