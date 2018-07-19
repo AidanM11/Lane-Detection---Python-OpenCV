@@ -42,6 +42,9 @@ if __name__ == '__main__':
             cv2.imshow('Frame', frame)
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
+            if cv2.waitKey(25) & 0xFF == ord(' '):
+                cv2.imwrite("image1.jpg", frame)
+
         else:
             break
 
