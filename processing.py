@@ -12,10 +12,11 @@ def Roi(img, vertices):
 
 def corners(img):
     height, width, depth = img.shape
-    coord_lst = [(int(width / 2), int(height / 3))]
+    print(img.shape)
+    coord_lst = [(width / 2 + int(width/10), height / 2), (width / 2 - int(width/10), height / 2)]
 
-    roi_h = 100
-    roi_w = 300
+    roi_h = int(height/10)
+    roi_w = int(width/8)
 
     bot_right = img[height - roi_h:height, width - roi_w:width]
 
@@ -68,7 +69,6 @@ def preprocess2(image):
     bgr = [[0,255,255],[255,255,255]]
     hsv1 = cv2.cvtColor(np.uint8([[bgr[0]]]), cv2.COLOR_BGR2HSV)[0][0]
     hsv2 = cv2.cvtColor(np.uint8([[bgr[1]]]), cv2.COLOR_BGR2HSV)[0][0]
-    print(hsv2)
 
     maxHSV1 = np.array([hsv1[0] + thresh, hsv1[1] + 150, hsv1[2] + 150])
     minHSV1 = np.array([hsv1[0] - thresh, hsv1[1] - 150, hsv1[2] - 150])
