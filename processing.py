@@ -14,43 +14,46 @@ def corners(img):
     height, width, depth = img.shape
     coord_lst = [(width / 2, height / 2)]
 
-    bot_right = img[height - 50:height, width - 200:width]
+    roi_h = 100
+    roi_w = 300
+
+    bot_right = img[height - roi_h:height, width - roi_w:width]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_right, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_right.shape
     goodFeats = cv2.goodFeaturesToTrack(cv2.cvtColor(bot_right, cv2.COLOR_BGR2GRAY), 1, 0.10, 5)
     if goodFeats is not None:
         if dst.max() < 0.0001:
-            cv2.circle(bot_right, (wid, hgt), 3, (0, 0, 255), -1)
+            cv2.circle(bot_right, (wdt, hgt), 3, (0, 255, 0), -1)
             coord_lst.append([width, height])
         else:
             for circleSet in goodFeats:
-                cv2.circle(bot_right, (circleSet[0][0], circleSet[0][1]), 3, (0, 0, 255), -1)
+                cv2.circle(bot_right, (circleSet[0][0], circleSet[0][1]), 3, (0, 255, 0), -1)
                 coord_lst.append([width - circleSet[0][0],height])
 
     else:
-        cv2.circle(bot_right, (0, hgt), 3, (0, 0, 255), -1)
+        cv2.circle(bot_right, (0, hgt), 3, (0, 255, 0), -1)
         coord_lst.append([width, height])
 
 
 
 
-    bot_left = img[height - 50:, :200]
+    bot_left = img[height - roi_h:, 0:roi_w]
 
     dst = cv2.cornerHarris(cv2.cvtColor(bot_left, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
     hgt, wdt, dep = bot_left.shape
     goodFeats1 = cv2.goodFeaturesToTrack(cv2.cvtColor(bot_left, cv2.COLOR_BGR2GRAY), 1, 0.10, 5)
     if goodFeats1 is not None:
         if dst.max() < 0.0001:
-            cv2.circle(bot_left, (0, hgt), 3, (0, 0, 255), -1)
+            cv2.circle(bot_left, (0, hgt), 3, (0, 255, 0), -1)
             coord_lst.append([0, height])
         else:
             for circleSet in goodFeats1:
-                cv2.circle(bot_left, (circleSet[0][0], circleSet[0][1]), 3, (0, 0, 255), -1)
+                cv2.circle(bot_left, (circleSet[0][0], circleSet[0][1]), 3, (0, 255, 0), -1)
                 coord_lst.append([circleSet[0][0],height])
 
     else:
-        cv2.circle(bot_left, (0, hgt), 3, (0, 0, 255), -1)
+        cv2.circle(bot_left, (0, hgt), 3, (0, 255, 0), -1)
         coord_lst.append([0, height])
 
     return img, coord_lst
