@@ -21,8 +21,10 @@ def preprocessImage(image):
     return threshImage
 
 
+def testPreprocess():
+    img = cv2.imread("test_images/solidYellowCurve2.jpg")
+    cv2.imshow("orig", img)
+    cv2.imshow("processed",preprocessImage(img))
+    cv2.waitKey()
 
-img = cv2.imread("test_images/solidYellowCurve2.jpg")
-cv2.imshow("orig", img)
-cv2.imshow("processed",preprocessImage(img))
-cv2.waitKey()
+#testPreprocess()
