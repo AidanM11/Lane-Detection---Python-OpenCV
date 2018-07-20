@@ -70,21 +70,8 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                 if allowedLength == 0:
                     polyPoints.append([x, (int)(x*m + b)])
                     break
-        elif lastGoodLine1 is not None:
-            m = lastGoodLine1[0]
-            b = lastGoodLine1[1]
-            allowedLength = (int)(width // 2 * 0.45)
-            for x in range(width // 2):
-                cv2.circle(origImg, (x, (int)(x * m + b)), 5, (0, 0, 255))
-                if (int)(x * m + b) < height:
-                    allowedLength = allowedLength - 1
-                    if bottomPointFound == False:
-                        polyPoints.append([x, (int)(x * m + b)])
-                        bottomPointFound = True
-                if allowedLength == 0:
-                    polyPoints.append([x, (int)(x * m + b)])
-                    break
-    elif lastGoodLine1 is not None:
+    if lastGoodLine1 is not None and len(points1x) <= 0:
+        print("Drawing old line")
         m = lastGoodLine1[0]
         b = lastGoodLine1[1]
         allowedLength = (int)(width // 2 * 0.45)
@@ -123,26 +110,10 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                 if allowedLength == 0:
                     polyPoints.append([x + width//2, (int)(x * m + b)])
                     break
-        elif lastGoodLine2 is not None:
-            print("Drawing old line")
-            m = lastGoodLine2[0]
-            b = lastGoodLine1[1]
-            allowedLength = (int)(width // 2 * 0.45)
-            for x in range(width // 2):
-                x = width - x - width // 2
-                cv2.circle(origImg, (x + width // 2, (int)(x * m + b)), 5, (0, 0, 255))
-                if (int)(x * m + b) < height:
-                    allowedLength = allowedLength - 1
-                    if bottomPointFound == False:
-                        polyPoints.append([x + width // 2, (int)(x * m + b)])
-                        bottomPointFound = True
-                if allowedLength == 0:
-                    polyPoints.append([x + width // 2, (int)(x * m + b)])
-                    break
-    elif lastGoodLine2 is not None:
+    if lastGoodLine2 is not None and len(points2x) <= 0:
         print("Drawing old line")
         m = lastGoodLine2[0]
-        b = lastGoodLine1[1]
+        b = lastGoodLine2[1]
         allowedLength = (int)(width // 2 * 0.45)
         for x in range(width // 2):
             x = width - x - width // 2
