@@ -15,8 +15,8 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
     #cv2.imshow("ROI", imageROI1)
     #cv2.imshow("ROI", imageROI2)
     #cv2.waitKey()
-    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 100, lines = 1, minLineLength=100, maxLineGap=600)
-    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 100, lines = 1, minLineLength=100, maxLineGap=600)
+    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 120, lines = 1, minLineLength=100, maxLineGap=600)
+    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 120, lines = 1, minLineLength=100, maxLineGap=600)
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     # if lines1 is not None:
     #     for lineSet in lines1:
@@ -146,22 +146,28 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/freewaybrent2_1.mp4")
+    cap = cv2.VideoCapture("test_videos/harder_challenge_video.mp4")
     lastLine1 = None
     lastLine2 = None
     while cap.isOpened():
         ret, frame = cap.read()
-        origFrame = frame
-        frame = processing.preprocess2(frame)
-        frame = preprocessImage(frame)
-        frame, vertices = processing.corners(frame)
-        frame = processing.Roi(frame, vertices)
-        origFrame, lastLine1, lastLine2 = detectLines(frame, origFrame, lastLine1, lastLine2)
-        cv2.imshow("Video", origFrame)
-        cv2.imshow("Processed", frame)
-        print("frame shown")
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            cv2.imwrite("test_images/newimage.jpg", origFrame)
+        if ret == True:
+            origFrame = frame
+            frame = processing.histogram(frame)
+            frame = processing.preprocess2(frame)
+            frame = preprocessImage(frame)
+            frame, vertices = processing.corners(frame)
+            frame = processing.Roi(frame, vertices)
+            origFrame, lastLine1, lastLine2 = detectLines(frame, origFrame, lastLine1, lastLine2)
+            res = np.hstack((origFrame, frame))
+            cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Video", 1600, 900)
+            cv2.imshow("Video", res)
+            print("frame shown")
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                cv2.imwrite("test_images/newimage.jpg", origFrame)
+                break
+        else:
             break
     cap.release()
     cv2.destroyAllWindows()
