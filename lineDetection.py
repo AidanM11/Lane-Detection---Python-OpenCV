@@ -43,9 +43,9 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
     polyPoints = []
     bottomPointFound = False
     lastGoodLine1 = defaultLine1
-    print("Last Good:" + (str)(lastGoodLine1))
+    #print("Last Good:" + (str)(lastGoodLine1))
     lastGoodLine2 = defaultLine2
-    print("Last Good2:" + (str)(lastGoodLine2))
+    #print("Last Good2:" + (str)(lastGoodLine2))
 
     if lines1 is not None:
         for lineSet in lines1:
@@ -71,7 +71,7 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                     polyPoints.append([x, (int)(x*m + b)])
                     break
     if lastGoodLine1 is not None and len(points1x) <= 0:
-        print("Drawing old line")
+        #print("Drawing old line")
         m = lastGoodLine1[0]
         b = lastGoodLine1[1]
         allowedLength = (int)(width // 2 * 0.45)
@@ -111,7 +111,7 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                     polyPoints.append([x + width//2, (int)(x * m + b)])
                     break
     if lastGoodLine2 is not None and len(points2x) <= 0:
-        print("Drawing old line")
+        #print("Drawing old line")
         m = lastGoodLine2[0]
         b = lastGoodLine2[1]
         allowedLength = (int)(width // 2 * 0.45)
@@ -146,7 +146,7 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/harder_challenge_video.mp4")
+    cap = cv2.VideoCapture("test_videos/chris1.mp4")
     lastLine1 = None
     lastLine2 = None
     while cap.isOpened():

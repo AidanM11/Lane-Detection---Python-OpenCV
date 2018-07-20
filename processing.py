@@ -37,8 +37,9 @@ def drawCorner(img, roi, coord_lst, dimensions, location):
 
 def corners(img):
     dimensions = img.shape  # height, width depth
-    coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / 20), int(3 * dimensions[0] / 5)),
-                 (dimensions[1] / 2 + int(dimensions[1] / 20), 3 * dimensions[0] // 5)]
+    wdt = 20
+    coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)),
+                 (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5)]
 
     roi_h = int(dimensions[0] / 10)
     roi_w = int(dimensions[1] / 8)
@@ -51,7 +52,7 @@ def corners(img):
 
     img, coord_lst = drawCorner(img, bot_left, coord_lst, dimensions, 1)
 
-    print(coord_lst)
+    #print(coord_lst)
 
     return img, coord_lst
 
@@ -59,14 +60,14 @@ def corners(img):
 def preprocess2(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
+    minHSV1 = np.array([13, 80, 200])
     maxHSV1 = np.array([30, 255, 255])
-    minHSV1 = np.array([17, 90, 70])
 
     maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
     resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
 
-    minHSV2 = np.array([0, 0, 130])
-    maxHSV2 = np.array([180, 35, 255])
+    minHSV2 = np.array([0, 0, 230])
+    maxHSV2 = np.array([180, 20, 255])
 
     maskHSV2 = cv2.inRange(image, minHSV2, maxHSV2)
     resultHSV2 = cv2.bitwise_and(image, image, mask=maskHSV2)
@@ -77,15 +78,32 @@ def preprocess2(image):
     return final_img
 
 def histogram(image):
+    dimensions = image.shape
     image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
     y, u, v = cv2.split(image)
+
+    mask = np.zeros_like(y)
+    vertices = [(dimensions[1] / 2 - int(dimensions[1] / 4), int(3 * dimensions[0] / 5)),
+                 (dimensions[1] / 2 + int(dimensions[1] / 4), 3 * dimensions[0] // 5),
+                (dimensions[1], dimensions[0]), (0, dimensions[0])]
+
+    cv2.fillPoly(mask, np.array([vertices], dtype=np.int32), (255, 255, 255))
+    y = cv2.bitwise_and(y, mask)
+
     equ = cv2.equalizeHist(y)
 
-    final_img = cv2.merge([equ,u,v])
+    image = cv2.merge([equ,u,v])
+    #
+    image = cv2.cvtColor(image, cv2.COLOR_YUV2BGR)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, s ,v = cv2.split(image)
+    h = cv2.bitwise_and(h,mask)
+    final_img = cv2.merge([h,s,v])
+
 
     #res = np.hstack((image, final_img))  # stacking images side-by-side
 
-    final_img = cv2.cvtColor(final_img, cv2.COLOR_YUV2BGR)
+    final_img = cv2.cvtColor(final_img, cv2.COLOR_HSV2BGR)
 
     #cv2.namedWindow('res', cv2.WINDOW_AUTOSIZE)
     #cv2.imshow('res', res)
@@ -94,9 +112,11 @@ def histogram(image):
     return final_img
 
 if __name__ == "__main__":
-    img = cv2.imread("test_images/solidYellowCurve2.jpg")
-    img, vertices = corners(img)
-    img = Roi(img, vertices)
+    img = cv2.imread("test_images/challenge1.png")
+    img = histogram(img)
+    # img, vertices = corners(img)
+    # img = Roi(img, vertices)
+    # img = preprocess2(img)
     cv2.imshow("a", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
