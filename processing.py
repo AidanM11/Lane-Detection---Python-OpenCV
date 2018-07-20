@@ -65,20 +65,24 @@ def preprocess2(image):
 
     thresh = 40
     threshTowardsBrown = 2
-    thresh2 = 30
+    thresh2 = 40
 
-    bgr = [[0,255,255],[255,255,255]]
-    hsv1 = cv2.cvtColor(np.uint8([[bgr[0]]]), cv2.COLOR_BGR2HSV)[0][0]
-    hsv2 = cv2.cvtColor(np.uint8([[bgr[1]]]), cv2.COLOR_BGR2HSV)[0][0]
+    #bgr = [[0,255,255],[255,255,255]]
+    # hsv1 = cv2.cvtColor(np.uint8([[bgr[0]]]), cv2.COLOR_BGR2HSV)[0][0]
+    #hsv2 = cv2.cvtColor(np.uint8([[bgr[1]]]), cv2.COLOR_BGR2HSV)[0][0]
 
-    maxHSV1 = np.array([hsv1[0] + thresh, hsv1[1] + 150, hsv1[2] + 150])
-    minHSV1 = np.array([hsv1[0] - threshTowardsBrown, hsv1[1] - 10, hsv1[2] - 150])
+    # maxHSV1 = np.array([hsv1[0] + thresh, hsv1[1] + 150, hsv1[2] + 150])
+    # minHSV1 = np.array([hsv1[0] - threshTowardsBrown, hsv1[1] - 10, hsv1[2] - 150])
+    maxHSV1 = np.array([30, 255, 255])
+    minHSV1 = np.array([17, 90, 70])
 
     maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
     resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
 
-    maxHSV2 = np.array([hsv2[0]+150, hsv2[1]+150, hsv2[2]])
-    minHSV2 = np.array([hsv2[0]-150, hsv2[1]-150, hsv2[2] - thresh2])
+    # maxHSV2 = np.array([hsv2[0]+150, hsv2[1]+150, hsv2[2]])
+    # minHSV2 = np.array([hsv2[0]-150, hsv2[1]-150, hsv2[2] - thresh2])
+    minHSV2 = np.array([0,0,120])
+    maxHSV2 = np.array([180,30,255])
 
     maskHSV2 = cv2.inRange(image, minHSV2, maxHSV2)
     resultHSV2 = cv2.bitwise_and(image, image, mask=maskHSV2)
