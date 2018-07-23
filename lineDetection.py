@@ -18,8 +18,8 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
     #cv2.imshow("ROI", imageROI1)
     #cv2.imshow("ROI", imageROI2)
     #cv2.waitKey()
-    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 120, lines = 1, minLineLength=100, maxLineGap=600)
-    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 120, lines = 1, minLineLength=100, maxLineGap=600)
+    lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 80, lines = 1, minLineLength=10, maxLineGap=600)
+    lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 80, lines = 1, minLineLength=10, maxLineGap=600)
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     lineImg = copy.deepcopy(origImg)
     if lines1 is not None:
@@ -61,7 +61,7 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                     divisorForYBetweenDots = 100
                     for mult in range(divisorForYBetweenDots):
                         currY = int(height*(mult/divisorForYBetweenDots))
-                        p1 = [(-currY-yInt)/lineSlope, currY]
+                        p1 = [((-currY-yInt)/lineSlope), currY]
                         if line[0] > line[2]:
                             minX = line[2]
                             maxX = line[0]
@@ -110,42 +110,57 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
     if lines2 is not None:
         for lineSet in lines2:
             for line in lineSet:
-                lineSlope = (line[1] - line[3]) / (line[0] - line[2])
-                if (lineSlope > -100 and lineSlope < -0.5) or (lineSlope < 100 and lineSlope > 0.3):
-                    points2x.append(line[0])
-                    points2x.append(line[2])
-                    points2y.append(line[1])
-                    points2y.append(line[3])
+                lineSlope = (-line[1] + line[3]) / (line[0] - line[2])
+                if (lineSlope > -100 and lineSlope < -0.3) or (lineSlope < 100 and lineSlope > 0.3):
+                    yInt = (-line[1]) - (lineSlope * line[0])
+                    print("Line Slope:" + str(lineSlope))
+                    divisorForYBetweenDots = 100
+                    for mult in range(divisorForYBetweenDots):
+                        currY = int(height*(mult/divisorForYBetweenDots))
+                        p1 = [((-currY-yInt)/lineSlope) + width//2, currY]
+                        if line[0] > line[2]:
+                            minX = line[2]
+                            maxX = line[0]
+                        else:
+                            minX = line[0] + width//2
+                            maxX = line[2] + width//2
+                        if p1[0] > minX and p1[0] < maxX:
+                            allp2.append(p1)
+                            #allp2.append(p2)
+                            points2x.append(p1[0])
+                            #points1x.append(p2[0])
+                            points2y.append(p1[1])
+                            #points1y.append(p2[1])
         if len(points2x) > 0:
-            m, b = np.polyfit(points2x, points2y, 1)
-            lastGoodLine2 = [m, b]
-            allowedLength = (int)(width // 2 * 0.45)
-            for x in range(width//2):
-                x = width - x - width//2
-                cv2.circle(origImg, (x + width//2, (int)(x*m + b)), 5, (0,0,255))
-                if (int)(x*m + b) < height:
-                    allowedLength = allowedLength - 1
-                    if bottomPointFound == False:
-                        polyPoints.append([x + width//2, (int)(x*m + b)])
-                        bottomPointFound = True
+            a, b, c = np.polyfit(points2y, points2x, 2)
+            lastGoodLine2 = [a, b, c]
+            allowedLength = (int)(height//3)
+            for y in range(height):
+                y = height-y
+                x = (int)(a*(y*y) + b*y + c)
+                cv2.circle(origImg, (x, y), 5, (0,0,255))
+                #if x < height:
+                allowedLength = allowedLength - 1
+                if bottomPointFound == False:
+                    polyPoints.append([x, y])
+                    bottomPointFound = True
                 if allowedLength == 0:
-                    polyPoints.append([x + width//2, (int)(x * m + b)])
+                    polyPoints.append([x, y])
                     break
-    if lastGoodLine2 is not None and len(points2x) <= 0:
+    if lastGoodLine1 is not None and len(points1x) <= 0:
         print("Drawing old line")
-        m = lastGoodLine2[0]
-        b = lastGoodLine2[1]
+        m = lastGoodLine1[0]
+        b = lastGoodLine1[1]
         allowedLength = (int)(width // 2 * 0.45)
         for x in range(width // 2):
-            x = width - x - width // 2
-            cv2.circle(origImg, (x + width // 2, (int)(x * m + b)), 5, (0, 0, 255))
+            cv2.circle(origImg, (x, (int)(x * m + b)), 5, (0, 0, 255))
             if (int)(x * m + b) < height:
                 allowedLength = allowedLength - 1
                 if bottomPointFound == False:
-                    polyPoints.append([x + width // 2, (int)(x * m + b)])
+                    polyPoints.append([x, (int)(x * m + b)])
                     bottomPointFound = True
             if allowedLength == 0:
-                polyPoints.append([x + width // 2, (int)(x * m + b)])
+                polyPoints.append([x, (int)(x * m + b)])
                 break
     if len(polyPoints) == 4:
         temp = polyPoints[2]
@@ -174,12 +189,13 @@ def testLineDetect():
 
 def testLineVideo():
     cap = cv2.VideoCapture("test_videos/project_video.mp4")
+    lastLine1 = None
     lastLine2 = None
     while cap.isOpened():
         ret, frame = cap.read()
         if ret == True:
             origFrame = frame
-            frame = processing.preprocess2(frame, 1)
+            frame = processing.preprocess2(frame)
             frame = processing.histogram(frame)
             frame = preprocessImage(frame)
             frame, vertices = processing.corners(frame)
