@@ -5,9 +5,13 @@ from preprocessing import preprocessImage
 import processing
 
 
-def detectLines(image, origImg, defaultLine1, defaultLine2):
+def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
     allp1 = []
     allp2 = []
+    retPoints1x = []
+    retPoints1y = []
+    retPoints2x = []
+    retPoints2y = []
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.Canny(image, 20, 200)
     (height, width) = image.shape
@@ -45,7 +49,7 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
     points2x = []
     points2y = []
     polyPoints = []
-    bottomPointFound = False
+    bottomPointFound = 10
     lastGoodLine1 = defaultLine1
     print("Last Good:" + (str)(lastGoodLine1))
     lastGoodLine2 = defaultLine2
@@ -75,6 +79,17 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                             #points1x.append(p2[0])
                             points1y.append(p1[1])
                             #points1y.append(p2[1])
+        retPoints1x = points1x
+        retPoints1y = points1y
+        #counting in secondary points
+        if secondPoints is not None:
+            points1x = points1x + points1x + points1x
+            points1y = points1y + points1y + points1y
+            for pointSet in secondPoints:
+                secondPointsCurr = pointSet[0]
+                points1x = points1x + secondPointsCurr[0]
+                points1y = points1y + secondPointsCurr[1]
+
         if len(points1x) > 0:
             a, b, c = np.polyfit(points1y, points1x, 2)
             lastGoodLine1 = [a, b, c]
@@ -83,30 +98,36 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                 y = height-y
                 x = (int)(a*(y*y) + b*y + c)
                 cv2.circle(origImg, (x, y), 5, (0,0,255))
+                bottomPointFound = bottomPointFound - 1
                 #if x < height:
                 allowedLength = allowedLength - 1
-                if bottomPointFound == False:
+                if bottomPointFound == 0:
                     polyPoints.append([x, y])
-                    bottomPointFound = True
+                    bottomPointFound = 10
                 if allowedLength == 0:
                     polyPoints.append([x, y])
                     break
     if lastGoodLine1 is not None and len(points1x) <= 0:
         print("Drawing old line")
-        m = lastGoodLine1[0]
+        a = lastGoodLine1[0]
         b = lastGoodLine1[1]
+        c = lastGoodLine1[2]
         allowedLength = (int)(width // 2 * 0.45)
-        for x in range(width // 2):
-            cv2.circle(origImg, (x, (int)(x * m + b)), 5, (0, 0, 255))
-            if (int)(x * m + b) < height:
+        for y in range(height):
+            y = height - y
+            x = (int)(a * (y * y) + b * y + c)
+            cv2.circle(origImg, (x, y), 5, (0, 0, 255))
+            bottomPointFound = bottomPointFound - 1
+            if y < height:
                 allowedLength = allowedLength - 1
-                if bottomPointFound == False:
-                    polyPoints.append([x, (int)(x * m + b)])
-                    bottomPointFound = True
+                if bottomPointFound == 0:
+                    polyPoints.append([x, y])
+                    bottomPointFound = 10
             if allowedLength == 0:
-                polyPoints.append([x, (int)(x * m + b)])
+                polyPoints.append([x, y])
                 break
-    bottomPointFound = False
+    bottomPointFound = 10
+    polyPoints = list(reversed(polyPoints))
     if lines2 is not None:
         for lineSet in lines2:
             for line in lineSet:
@@ -131,6 +152,16 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                             #points1x.append(p2[0])
                             points2y.append(p1[1])
                             #points1y.append(p2[1])
+        retPoints2x = points2x
+        retPoints2y = points2y
+        if secondPoints is not None:
+            points2x = points2x + points2x + points2x
+            points2y = points2y + points2y + points2y
+            for pointSet in secondPoints:
+                secondPointsCurr = pointSet[1]
+                points2x = points2x + secondPointsCurr[0]
+                points2y = points2y + secondPointsCurr[1]
+
         if len(points2x) > 0:
             a, b, c = np.polyfit(points2y, points2x, 2)
             lastGoodLine2 = [a, b, c]
@@ -139,44 +170,50 @@ def detectLines(image, origImg, defaultLine1, defaultLine2):
                 y = height-y
                 x = (int)(a*(y*y) + b*y + c)
                 cv2.circle(origImg, (x, y), 5, (0,0,255))
+                bottomPointFound = bottomPointFound - 1
                 #if x < height:
                 allowedLength = allowedLength - 1
-                if bottomPointFound == False:
+                if bottomPointFound == 0:
                     polyPoints.append([x, y])
-                    bottomPointFound = True
+                    bottomPointFound = 10
                 if allowedLength == 0:
+                    print(bottomPointFound)
                     polyPoints.append([x, y])
                     break
     if lastGoodLine1 is not None and len(points1x) <= 0:
         print("Drawing old line")
-        m = lastGoodLine1[0]
+        a = lastGoodLine1[0]
         b = lastGoodLine1[1]
+        c = lastGoodLine1[2]
         allowedLength = (int)(width // 2 * 0.45)
-        for x in range(width // 2):
-            cv2.circle(origImg, (x, (int)(x * m + b)), 5, (0, 0, 255))
-            if (int)(x * m + b) < height:
+        for y in range(height):
+            y = height - y
+            x = (int)(a * (y * y) + b * y + c)
+            cv2.circle(origImg, (x, y), 5, (0, 0, 255))
+            bottomPointFound = bottomPointFound - 1
+            if y < height:
                 allowedLength = allowedLength - 1
-                if bottomPointFound == False:
-                    polyPoints.append([x, (int)(x * m + b)])
-                    bottomPointFound = True
-            if allowedLength == 0:
-                polyPoints.append([x, (int)(x * m + b)])
-                break
-    if len(polyPoints) == 4:
-        temp = polyPoints[2]
-        polyPoints[2] = polyPoints[3]
-        polyPoints[3] = temp
+                if bottomPointFound == 0:
+                    polyPoints.append([x, y])
+                    bottomPointFound = 10
+                if allowedLength == 0:
+                    polyPoints.append([x, y])
+                    break
+    if len(polyPoints) > 4:
+        # temp = polyPoints[2]
+        # polyPoints[2] = polyPoints[3]
+        # polyPoints[3] = temp
         polyPoints =np.array(polyPoints)
         newImg = np.zeros_like(origImg)
         cv2.fillPoly(newImg, [polyPoints], (0,255,0))
-        origImg = cv2.addWeighted(origImg, 1, newImg, 0.7, 0)
+        origImg = cv2.addWeighted(origImg, 1, newImg, 0.4, 0)
     if len(allp1) > 0:
         for p1 in allp1:
             lineImg = cv2.circle(lineImg, (int(p1[0]), int(p1[1])), 10, (255,0,0), thickness= -1)
     if len(allp2) > 0:
         for p2 in allp2:
             lineImg = cv2.circle(lineImg, (int(p2[0]), int(p2[1])), 10, (255, 0, 0), thickness=-1)
-    return origImg, lastGoodLine1, lastGoodLine2, lineImg
+    return origImg, lastGoodLine1, lastGoodLine2, lineImg, [[retPoints1x, retPoints1y], [retPoints2x, retPoints2y]]
 
 def testLineDetect():
     img = cv2.imread("test_images/solidYellowLeft.jpg")
@@ -188,9 +225,11 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/project_video.mp4")
+    cap = cv2.VideoCapture("test_videos/challenge.mp4")
     lastLine1 = None
     lastLine2 = None
+    secondaryPoints = []
+    numFramesRelevant = 15
     while cap.isOpened():
         ret, frame = cap.read()
         if ret == True:
@@ -200,7 +239,12 @@ def testLineVideo():
             frame = preprocessImage(frame)
             frame, vertices = processing.corners(frame)
             frame = processing.Roi(frame, vertices)
-            origFrame, lastLine1, lastLine2, lineImg = detectLines(frame, origFrame, lastLine1, lastLine2)
+            if len(secondaryPoints) > numFramesRelevant:
+                currFrameSecPoints = secondaryPoints[len(secondaryPoints) - numFramesRelevant:len(secondaryPoints)]
+            else:
+                currFrameSecPoints = None
+            origFrame, lastLine1, lastLine2, lineImg, points = detectLines(frame, origFrame, lastLine1, lastLine2, currFrameSecPoints)
+            secondaryPoints.append(points)
             res = np.hstack((origFrame, frame, lineImg))
             cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
             cv2.resizeWindow("Video", 1600, 900)
