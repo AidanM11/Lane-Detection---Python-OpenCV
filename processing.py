@@ -60,13 +60,13 @@ def corners(img):
 def preprocess2(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    minHSV1 = np.array([13, 80, 200])
+    minHSV1 = np.array([13, 80, 150])
     maxHSV1 = np.array([30, 255, 255])
 
     maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
     resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
 
-    minHSV2 = np.array([0, 0, 230])
+    minHSV2 = np.array([0, 0, 200])
     maxHSV2 = np.array([180, 20, 255])
 
     maskHSV2 = cv2.inRange(image, minHSV2, maxHSV2)
