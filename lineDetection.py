@@ -225,11 +225,11 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/challenge.mp4")
+    cap = cv2.VideoCapture("test_videos/half_road_challenge.mp4")
     lastLine1 = None
     lastLine2 = None
     secondaryPoints = []
-    numFramesRelevant = 15
+    numFramesRelevant = 8
     while cap.isOpened():
         ret, frame = cap.read()
         if ret == True:
