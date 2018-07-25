@@ -37,9 +37,14 @@ def drawCorner(img, roi, coord_lst, dimensions, location):
 
 def corners(img):
     dimensions = img.shape  # height, width depth
-    wdt = 20
-    coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)),
-                 (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5)]
+    wdt = 15
+    # coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)),
+    #              (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5),]
+    coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)), # trapezoid top left
+                 (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5), # trapezoid top right
+                 (dimensions[1] / 2 + int(dimensions[1] / (wdt/3)), dimensions[0]), # cut bot right
+                 (dimensions[1] / 2 - int(dimensions[1] / (wdt/3)), dimensions[0]),# cut bot left
+                 (dimensions[1] / 2 , 3 * dimensions[0]//4)] #cut middle
 
     roi_h = int(dimensions[0] / 10)
     roi_w = int(dimensions[1] / 8)
@@ -52,7 +57,8 @@ def corners(img):
 
     img, coord_lst = drawCorner(img, bot_left, coord_lst, dimensions, 1)
 
-    #print(coord_lst)
+    coord_lst[0], coord_lst[1], coord_lst[2], coord_lst[3], coord_lst[4], coord_lst[5], coord_lst[6] = coord_lst[6], coord_lst[
+        0], coord_lst[1], coord_lst[5], coord_lst[2], coord_lst[4], coord_lst[3]
 
     return img, coord_lst
 
@@ -113,10 +119,9 @@ def histogram(image):
 
 if __name__ == "__main__":
     img = cv2.imread("test_images/challenge1.png")
-    img = histogram(img)
-    # img, vertices = corners(img)
-    # img = Roi(img, vertices)
-    # img = preprocess2(img)
+    img, vertices = corners(img)
+    vertices[0],vertices[1],vertices[2],vertices[3], vertices[4], vertices[5], vertices[6] = vertices[6], vertices[0], vertices[1], vertices[5], vertices[2], vertices[4], vertices[3]
+    img = Roi(img, vertices)
     cv2.imshow("a", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

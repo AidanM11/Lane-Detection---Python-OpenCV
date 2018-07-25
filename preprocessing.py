@@ -9,13 +9,13 @@ def preprocessImage(image):
     midHgt = height // 2
     #mask[midHgt:height, :, :] = 255
     #mask = cv2.merge((mask, mask, mask))
-    print(image.shape)
+    #print(image.shape)
     #maskedImage = cv2.bitwise_and(image, mask)
     kern1 = cv2.getStructuringElement(cv2.MORPH_CROSS, (4, 4))
     image = cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kern1, iterations=2)
     gImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     ret, threshedMask = cv2.threshold(gImage, 30, 255, cv2.THRESH_BINARY)
-    print(threshedMask.shape)
+    #print(threshedMask.shape)
     threshedMask = cv2.merge((threshedMask, threshedMask, threshedMask))
     threshImage = cv2.bitwise_and(image, threshedMask)
     threshImage = cv2.GaussianBlur(threshImage, (3,3), 0)

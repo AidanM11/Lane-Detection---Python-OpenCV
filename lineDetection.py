@@ -225,14 +225,14 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/half_road_challenge.mp4")
+    cap = cv2.VideoCapture("test_videos/harder_challenge_video.mp4")
     lastLine1 = None
     lastLine2 = None
     secondaryPoints = []
     numFramesRelevant = 15
     ret, frame = cap.read()
     height, width, depth = frame.shape
-    out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (width, height))
+    #out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (width, height))
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -257,7 +257,7 @@ def testLineVideo():
             cv2.imshow("Video", res)
 
             #Video Write
-            out.write(origFrame)
+            #out.write(origFrame)
 
             print("frame shown")
             if cv2.waitKey(25) & 0xFF == ord('q'):
