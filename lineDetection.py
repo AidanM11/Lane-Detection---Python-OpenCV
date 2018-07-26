@@ -3,7 +3,7 @@ import copy
 import numpy as np
 from preprocessing import preprocessImage
 import processing
-
+from PIL import Image
 
 def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
     allp1 = []
@@ -223,13 +223,19 @@ def testLineDetect():
     cv2.waitKey()
 
 def testLineVideo():
-    cap = cv2.VideoCapture("test_videos/half_road_challenge.mp4")
+    cap = cv2.VideoCapture("test_videos/harder_challenge_video.mp4")
     lastLine1 = None
     lastLine2 = None
     secondaryPoints = []
-    numFramesRelevant = 8
+    numFramesRelevant = 15
+    ret, frame = cap.read()
+    height, width, depth = frame.shape
+    #out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (width, height))
+
     while cap.isOpened():
         ret, frame = cap.read()
+
+
         if ret == True:
             origFrame = frame
             frame = processing.preprocess2(frame)
@@ -247,6 +253,10 @@ def testLineVideo():
             cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
             cv2.resizeWindow("Video", 1600, 900)
             cv2.imshow("Video", res)
+
+            #Video Write
+            #out.write(origFrame)
+
             print("frame shown")
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.imwrite("test_images/newimage.jpg", origFrame)
