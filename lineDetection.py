@@ -24,7 +24,7 @@ def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
     #cv2.waitKey()
     lines1 = cv2.HoughLinesP(imageROI1, 4, np.pi/180, 80, lines = 1, minLineLength=10, maxLineGap=600)
     lines2 = cv2.HoughLinesP(imageROI2, 4, np.pi/180, 80, lines = 1, minLineLength=10, maxLineGap=600)
-    image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    #image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     lineImg = copy.deepcopy(origImg)
     if lines1 is not None:
         for lineSet in lines1:
@@ -112,17 +112,16 @@ def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
         a = lastGoodLine1[0]
         b = lastGoodLine1[1]
         c = lastGoodLine1[2]
-        allowedLength = (int)(width // 2 * 0.45)
+        allowedLength = (int)(height//3)
         for y in range(height):
             y = height - y
             x = (int)(a * (y * y) + b * y + c)
             cv2.circle(origImg, (x, y), 5, (0, 0, 255))
             bottomPointFound = bottomPointFound - 1
-            if y < height:
-                allowedLength = allowedLength - 1
-                if bottomPointFound == 0:
-                    polyPoints.append([x, y])
-                    bottomPointFound = 10
+            allowedLength = allowedLength - 1
+            if bottomPointFound == 0:
+                polyPoints.append([x, y])
+                bottomPointFound = 10
             if allowedLength == 0:
                 polyPoints.append([x, y])
                 break
@@ -134,7 +133,6 @@ def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
                 lineSlope = (-line[1] + line[3]) / (line[0] - line[2])
                 if (lineSlope > -100 and lineSlope < -0.3) or (lineSlope < 100 and lineSlope > 0.3):
                     yInt = (-line[1]) - (lineSlope * line[0])
-                    print("Line Slope:" + str(lineSlope))
                     divisorForYBetweenDots = 100
                     for mult in range(divisorForYBetweenDots):
                         currY = int(height*(mult/divisorForYBetweenDots))
@@ -180,25 +178,25 @@ def detectLines(image, origImg, defaultLine1, defaultLine2, secondPoints):
                     print(bottomPointFound)
                     polyPoints.append([x, y])
                     break
-    if lastGoodLine1 is not None and len(points1x) <= 0:
+    print(lastGoodLine2 is not None and len(points2x) <= 0)
+    if lastGoodLine2 is not None and len(points2x) <= 0:
         print("Drawing old line")
-        a = lastGoodLine1[0]
-        b = lastGoodLine1[1]
-        c = lastGoodLine1[2]
-        allowedLength = (int)(width // 2 * 0.45)
+        a = lastGoodLine2[0]
+        b = lastGoodLine2[1]
+        c = lastGoodLine2[2]
+        allowedLength = (int)(height//3)
         for y in range(height):
             y = height - y
             x = (int)(a * (y * y) + b * y + c)
             cv2.circle(origImg, (x, y), 5, (0, 0, 255))
             bottomPointFound = bottomPointFound - 1
-            if y < height:
-                allowedLength = allowedLength - 1
-                if bottomPointFound == 0:
-                    polyPoints.append([x, y])
-                    bottomPointFound = 10
-                if allowedLength == 0:
-                    polyPoints.append([x, y])
-                    break
+            allowedLength = allowedLength - 1
+            if bottomPointFound == 0:
+                polyPoints.append([x, y])
+                bottomPointFound = 10
+            if allowedLength == 0:
+                polyPoints.append([x, y])
+                break
     if len(polyPoints) > 4:
         # temp = polyPoints[2]
         # polyPoints[2] = polyPoints[3]
