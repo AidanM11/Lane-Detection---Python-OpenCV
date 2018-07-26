@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def Roi(img, vertices):
+def Roi(img, vertices): #create ROI for lane detection
     mask = np.zeros_like(img)
     cv2.fillPoly(mask, np.array([vertices], dtype=np.int32), (255, 255, 255))
     masked_image = cv2.bitwise_and(img, mask)
@@ -10,26 +10,25 @@ def Roi(img, vertices):
 
 
 def drawCorner(img, roi, coord_lst, dimensions, location):
-    hgt, wdt, dep = roi.shape
-    dst = cv2.cornerHarris(cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY), 2, 3, 0.04)
+    dst = cv2.cornerHarris(cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY), 2, 3, 0.04) #finds scores of corners
     goodFeats = cv2.goodFeaturesToTrack(cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY), 1, 0.10, 5)
 
-    if location == 0:
+    if location == 0:  #right
         coordinates = [dimensions[0], dimensions[1], 100]
-    elif location == 1:
+    elif location == 1: #left
         coordinates = [dimensions[0], 0, -100]
 
     if goodFeats is not None:
-        if dst.max() < 0.0001:
-            cv2.circle(roi, (wdt, hgt), 5, (0, 255, 0), -1)
+        if dst.max() < 0.0001: #if corner is not a good enough corner, ignore
+            #cv2.circle(roi, (wdt, hgt), 5, (0, 255, 0), -1)
             coord_lst.append([coordinates[1], coordinates[0]])
         else:
             for circleSet in goodFeats:
-                cv2.circle(roi, (circleSet[0][0], circleSet[0][1]), 5, (0, 255, 0), -1)
+                #cv2.circle(roi, (circleSet[0][0], circleSet[0][1]), 5, (0, 255, 0), -1)
                 coord_lst.append([coordinates[1] - circleSet[0][0] + coordinates[2], coordinates[0]])
 
     else:
-        cv2.circle(roi, (0, hgt), 5, (0, 255, 0), -1)
+        #cv2.circle(roi, (0, hgt), 5, (0, 255, 0), -1)
         coord_lst.append([coordinates[1], coordinates[0]])
 
     return img, coord_lst
@@ -37,14 +36,16 @@ def drawCorner(img, roi, coord_lst, dimensions, location):
 
 def corners(img):
     dimensions = img.shape  # height, width depth
-    wdt = 15
+    wdt = 20
     # coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)),
     #              (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5),]
+
+    #vertices of the mask
     coord_lst = [(dimensions[1] / 2 - int(dimensions[1] / wdt), int(3 * dimensions[0] / 5)), # trapezoid top left
                  (dimensions[1] / 2 + int(dimensions[1] / wdt), 3 * dimensions[0] // 5), # trapezoid top right
-                 (dimensions[1] / 2 + int(dimensions[1] / (wdt/3)), dimensions[0]), # cut bot right
-                 (dimensions[1] / 2 - int(dimensions[1] / (wdt/3)), dimensions[0]),# cut bot left
-                 (dimensions[1] / 2 , 3 * dimensions[0]//4)] #cut middle
+                 (dimensions[1] / 2 + int(dimensions[1] / (wdt/4)), dimensions[0]), # cut bot right
+                 (dimensions[1] / 2 - int(dimensions[1] / (wdt/4)), dimensions[0]),# cut bot left
+                 (dimensions[1] / 2 , 2 * dimensions[0]//3)] #cut middle
 
     roi_h = int(dimensions[0] / 10)
     roi_w = int(dimensions[1] / 8)
@@ -65,13 +66,14 @@ def corners(img):
 
 def preprocess2(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    minHSV1 = np.array([13, 80, 150])
-    maxHSV1 = np.array([30, 255, 255])
+    #filter yellow
+    minHSV1 = np.array([10, 80, 150])
+    maxHSV1 = np.array([35, 255, 255])
 
     maskHSV1 = cv2.inRange(image, minHSV1, maxHSV1)
     resultHSV1 = cv2.bitwise_and(image, image, mask=maskHSV1)
 
+    #filter white
     minHSV2 = np.array([0, 0, 200])
     maxHSV2 = np.array([180, 20, 255])
 
@@ -86,17 +88,20 @@ def preprocess2(image):
 def histogram(image):
     dimensions = image.shape
     image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-    y, u, v = cv2.split(image)
+    y, u, v = cv2.split(image) #y is brightness
+
 
     mask = np.zeros_like(y)
     vertices = [(dimensions[1] / 2 - int(dimensions[1] / 4), int(3 * dimensions[0] / 5)),
                  (dimensions[1] / 2 + int(dimensions[1] / 4), 3 * dimensions[0] // 5),
                 (dimensions[1], dimensions[0]), (0, dimensions[0])]
 
-    cv2.fillPoly(mask, np.array([vertices], dtype=np.int32), (255, 255, 255))
+    cv2.fillPoly(mask, np.array([vertices], dtype=np.int32), (255, 255, 255)) #create mask for image
     y = cv2.bitwise_and(y, mask)
 
-    equ = cv2.equalizeHist(y)
+    equ = cv2.equalizeHist(y) #equalize the histogram for brightness
+
+
 
     image = cv2.merge([equ,u,v])
     #
@@ -122,6 +127,7 @@ if __name__ == "__main__":
     img, vertices = corners(img)
     vertices[0],vertices[1],vertices[2],vertices[3], vertices[4], vertices[5], vertices[6] = vertices[6], vertices[0], vertices[1], vertices[5], vertices[2], vertices[4], vertices[3]
     img = Roi(img, vertices)
+    img = histogram(img)
     cv2.imshow("a", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
